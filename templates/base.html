@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/5.3.3/zephyr/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="../static/style.css">
+  <title>Easy Recipes</title>
+</head>
+
+<body class="{% block body_class %}{% endblock %}">
+  <nav class="navbar navbar-light bg-primary justify-content-between">
+    <div class="container">
+        <a href="/" class="navbar-brand text-light">Easy Recipes</a>
+        <ul class="nav navbar-nav flex-row float-right">
+            {% if session['curr_user'] %}
+            <li class="nav-item">
+                <a href="/logout" class="nav-link pe-3 text-light">Logout ({{ g.user.username }})</a>
+            </li>
+            {% else %}
+            <li class="nav-item">
+                <a href="/login" class="nav-link pe-3 text-light">Login</a>
+            </li>
+            <li class="nav-item">
+                <a href="/register" class="nav-link text-light">Sign Up</a>
+            </li>
+            {% endif %}
+        </ul>
+    </div>
+</nav>
+  <div class="container" style="margin-top: 1em">
+    {% for category, msg in get_flashed_messages(with_categories=true) %}
+    <div class="alert alert-{{category}}">{{msg}}</div>
+    {% endfor %}
+  </div>
+  {% block content %}
+  {% endblock %}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.8/axios.min.js"></script>
+  <script src="../static/script.js"></script>
+</body>
+
+</html>

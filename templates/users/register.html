@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+  <div class="row justify-content-center">
+  <div class="col-sm-10 col-md-7 col-lg-5">
+    <h2 class="join-message">Join Warbler today.</h2>
+    <form method="POST" id="user_form">
+      {% include 'form_iter.html' %}
+      <button class="btn btn-primary btn-lg btn-block">Sign me up!</button>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
