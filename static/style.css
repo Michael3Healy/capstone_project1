@@ -2,10 +2,22 @@
     background-color: #EEEEEE;
 }
 
-.recipe {
-    display: inline;
-}
-
 #search_results {
     border-radius: 5px;
+}
+
+.card {
+    height: 60vh;
+}
+
+.recipe {
+    position: relative;
+    height: 60vh;
+}
+
+.recipe-link {
+    position: absolute;
+    left: 23%;
+    right: 23%;
+    bottom: 20px; /* Adjust this value to move the link up from the bottom */
 }

@@ -74,13 +74,35 @@ class Recipe(db.Model):
 
     __tablename__ = 'recipes'
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=False)
 
     recipe_title = db.Column(db.Text, nullable=False, unique=True)
 
     cuisine = db.Column(db.Text)
 
+    summary = db.Column(db.Text)
+
+    instructions = db.Column(db.Text)
+
+    source_url = db.Column(db.Text)
+
+    prep_time = db.Column(db.Text)
+
+    image = db.Column(db.Text)
+
     ingredients = db.relationship('Ingredient', secondary='recipes_ingredients', cascade='all, delete', backref='recipes')
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'recipe_title': self.recipe_title,
+            'cuisine': self.cuisine,
+            'summary': self.summary,
+            'instructions': self.instructions,
+            'source_url': self.source_url,
+            'prep_time': self.prep_time,
+            'image': self.image,
+        }
 
 class Recipes_Ingredients(db.Model):
     '''Connects Recipes to Ingredients. Helpful for tracking which ingredients

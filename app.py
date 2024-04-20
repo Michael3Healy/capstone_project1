@@ -6,6 +6,8 @@ from sqlalchemy.exc import IntegrityError
 from forms import UserAddForm, UserEditForm, LoginForm
 from models import db, connect_db, User, Recipe, Ingredient
 from pdb import set_trace
+import requests
+from secret_info import API_KEY
 
 CURR_USER_KEY = "curr_user"
 
@@ -55,6 +57,34 @@ def do_logout():
         return True
     return False
 
+@app.route('/recipes/random')
+def get_random_recipes():
+    resp = requests.get('https://api.spoonacular.com/recipes/random', params={'apiKey': API_KEY, 'number': 12})
+    return jsonify(resp.json())
+
+@app.route('/recipes/findByIngredients')
+def get_specific_recipes():
+    ingredients = request.args['ingredients']
+    resp = requests.get('https://api.spoonacular.com/recipes/findByIngredients', params={'apiKey': API_KEY, 'ingredients': ingredients, 'number': 24})
+    print(resp.json())
+    return jsonify(resp.json())
+
+@app.route('/recipes/seed', methods=['POST'])
+def seed_db():
+    for recipe in request.json['recipes']:
+        set_trace()
+        recipe_instance = Recipe(id=recipe['id'], recipe_title=recipe['title'], cuisine=recipe['cuisine'], summary=recipe['summary'], instructions=recipe['instructions'], source_url=recipe['sourceUrl'], prep_time=recipe['prepTime'], image=recipe['image'])
+        db.session.add(recipe_instance)
+        user = User.query.get(1)
+        user.recipes.append(recipe_instance)
+    db.session.commit()
+    return jsonify({"Result": "Seeded DB"})
+
+@app.route('/users/<user_id>/recipes')
+def get_saved_recipes(user_id):
+    user = User.query.get_or_404(user_id)
+    recipes = [recipe.serialize() for recipe in user.recipes]
+    return jsonify(recipes)
 
 @app.route('/')
 def home_page():
