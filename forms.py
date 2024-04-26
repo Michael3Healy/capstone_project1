@@ -13,6 +13,7 @@ class UserAddForm(FlaskForm):
     diet = SelectField('Diet', choices=[('none', 'None'), ('vegetarian', 'Vegetarian'), ('lacto_vegetarian', 'Lactor-Vegetarian'),
                                                     ('ovo_vegetarian', 'Ovo-Vegetarian'), ('vegan', 'Vegan'), ('pescetarian', 'Pescetarian'),
                                                     ('paleo', 'Paleo'), ('low_fodmap', 'Low FODMAP'), ('whole30', 'Whole30')])
+    allergies = StringField('Allergies')
 
 
 class LoginForm(FlaskForm):
@@ -26,5 +27,9 @@ class UserEditForm(FlaskForm):
     username = StringField('Username')
     email = StringField('E-mail', validators=[Email(message='Please enter valid email address'), Optional()])
     image_url = StringField('(Optional) Image URL')
+    diet = SelectField('Diet', choices=[('none', 'None'), ('vegetarian', 'Vegetarian'), ('lacto_vegetarian', 'Lactor-Vegetarian'),
+                                                    ('ovo_vegetarian', 'Ovo-Vegetarian'), ('vegan', 'Vegan'), ('pescetarian', 'Pescetarian'),
+                                                    ('paleo', 'Paleo'), ('low_fodmap', 'Low FODMAP'), ('whole30', 'Whole30')])
+    allergies = StringField('Allergies')
 
     password = PasswordField('Password', validators=[Length(min=6)])

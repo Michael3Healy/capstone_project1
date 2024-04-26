@@ -1,13 +1,14 @@
 import os
 from unittest import TestCase
 from pdb import set_trace
-from models import db, User, Recipe, Ingredient
+from models import db, User, Favorites, Allergy, Ingredient, Recipe
 from sqlalchemy import exc
 
 os.environ['DATABASE_URL'] = "postgresql:///easy_recipes_test"
 
 from app import app
 
+db.drop_all()
 db.create_all()
 
 class UserModelTestCase(TestCase):
@@ -17,7 +18,8 @@ class UserModelTestCase(TestCase):
         """Delete test model instances from db"""
 
         User.query.delete()
-        Recipe.query.delete()
+        Allergy.query.delete()
+        Favorites.query.delete()
         Ingredient.query.delete()
 
     def tearDown(self):
@@ -26,30 +28,31 @@ class UserModelTestCase(TestCase):
     def test_user_model_relationships(self):
         '''Test if user model relationships work (recipes, allergies)'''
 
-        user = User(email='test@test.com', username='testuser', password='password')
+        user = User.register(email='test@test.com', username='testuser', password='password',
+                    image_url='https://tinyurl.com/29q8o28r', diet='vegan', allergies='peanuts')
 
-        recipe = Recipe(recipe_title='Apple Pork Tenderloin')
+        ingredient1 = user.allergies[0]
 
-        ingredient1 = Ingredient(ingredient_title='green apples')
+        recipe1 = Recipe(id=1)
+        recipe2 = Recipe(id=2)
 
-        ingredient2 = Ingredient(ingredient_title='pork tenderloin')
+        user.recipes.append(recipe1)
+        user.recipes.append(recipe2)
 
-        user.recipes.append(recipe)
-        user.allergies.append(ingredient1)
-        user.allergies.append(ingredient2)
-
-        db.session.add_all([user, recipe, ingredient1, ingredient2])
+        db.session.add_all([user, recipe1, recipe2])
         db.session.commit()
-
-        self.assertEqual(len(user.recipes), 1)
-        self.assertEqual(len(user.allergies), 2)
+    
+        self.assertEqual(len(user.recipes), 2)
+        self.assertEqual(len(user.allergies), 1)
+        self.assertEqual(ingredient1.users[0], user)
+      
 
 
     def test_valid_registration(self):
         '''Test if User.register creates user with valid inputs'''
 
         valid_user = User.register(email='test@test.com', username='testuser', password='password',
-                    image_url='https://tinyurl.com/29q8o28r', diet='vegan')
+                    image_url='https://tinyurl.com/29q8o28r', diet='vegan', allergies='apples')
         
         db.session.add(valid_user)
         db.session.commit()
@@ -64,7 +67,8 @@ class UserModelTestCase(TestCase):
             username='noemailuser',
             password="failed_email",
             image_url='https://tinyurl.com/29q8o28r',
-            diet='vegan'
+            diet='vegan',
+            allergies='grapes'
         )
         db.session.add(invalid_user)
 
@@ -75,7 +79,7 @@ class UserModelTestCase(TestCase):
         '''Test if User.authenticate correctly returns a user or False'''
 
         valid_user = User.register(email='test@test.com', username='testuser', password='password',
-                    image_url='https://tinyurl.com/29q8o28r', diet='vegan')
+                    image_url='https://tinyurl.com/29q8o28r', diet='vegan', allergies='apples')
         db.session.add(valid_user)
 
         auth_check_valid = User.authenticate('testuser', 'password')

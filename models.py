@@ -1,5 +1,7 @@
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
+import re
+from pdb import set_trace
 
 bcrypt = Bcrypt()
 db = SQLAlchemy()
@@ -13,7 +15,7 @@ class User(db.Model):
 
     __tablename__ = 'users'
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
 
     email = db.Column(db.Text, nullable=False, unique=True)
 
@@ -25,12 +27,24 @@ class User(db.Model):
 
     diet = db.Column(db.Text)
 
-    recipes = db.relationship('Recipe', secondary='users_recipes', cascade='all, delete', backref='users')
+    allergies = db.relationship('Ingredient', backref='users', secondary='allergies', cascade='all, delete')
 
-    allergies = db.relationship('Ingredient', secondary='allergies', cascade='all, delete', backref='users')
+    recipes = db.relationship('Recipe', backref='users', secondary='favorite_recipes', cascade='all, delete')
+
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'email': self.email,
+            'username': self.username,
+            'image_url': self.image_url,
+            'diet': self.diet,
+            'recipes': [recipe.id for recipe in self.recipes],
+            'allergies': [allergy.id for allergy in self.allergies]
+        }
 
     @classmethod
-    def register(cls, username, email, password, image_url, diet):
+    def register(cls, username, email, password, image_url, diet, allergies):
         """Register user. Hashes password and adds user to system."""
 
         hashed_pwd = bcrypt.generate_password_hash(password).decode('UTF-8')
@@ -40,9 +54,10 @@ class User(db.Model):
             email=email,
             password=hashed_pwd,
             image_url=image_url,
-            diet=diet
+            diet=diet,
         )
-
+        add_allergy(allergies, user)
+        
         return user
 
     @classmethod
@@ -58,80 +73,59 @@ class User(db.Model):
 
         return False
 
-class Users_Recipes(db.Model):
-    '''Connects Users to saved/favorite Recipes'''
+class Favorites(db.Model):
+    '''Tracks users' saved recipes.'''
 
-    __tablename__ = 'users_recipes'
-
-    id = db.Column(db.Integer, primary_key=True)
-
-    recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.id', ondelete='CASCADE'))
-
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'))
-
-class Recipe(db.Model):
-    '''Recipe Class'''
-
-    __tablename__ = 'recipes'
-
-    id = db.Column(db.Integer, primary_key=True, autoincrement=False)
-
-    recipe_title = db.Column(db.Text, nullable=False, unique=True)
-
-    cuisine = db.Column(db.Text)
-
-    summary = db.Column(db.Text)
-
-    instructions = db.Column(db.Text)
-
-    source_url = db.Column(db.Text)
-
-    prep_time = db.Column(db.Text)
-
-    image = db.Column(db.Text)
-
-    ingredients = db.relationship('Ingredient', secondary='recipes_ingredients', cascade='all, delete', backref='recipes')
-
-    def serialize(self):
-        return {
-            'id': self.id,
-            'recipe_title': self.recipe_title,
-            'cuisine': self.cuisine,
-            'summary': self.summary,
-            'instructions': self.instructions,
-            'source_url': self.source_url,
-            'prep_time': self.prep_time,
-            'image': self.image,
-        }
-
-class Recipes_Ingredients(db.Model):
-    '''Connects Recipes to Ingredients. Helpful for tracking which ingredients
-    used in which recipes'''
-
-    __tablename__ = 'recipes_ingredients'
+    __tablename__ = 'favorite_recipes'
 
     id = db.Column(db.Integer, primary_key=True)
 
-    ingredient_id = db.Column(db.Integer, db.ForeignKey('ingredients.id', ondelete='CASCADE'))
+    recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.id', ondelete='cascade'), nullable=False)
 
-    recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.id', ondelete='CASCADE'))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='cascade'), nullable=False)
 
-class Ingredient(db.Model):
-    '''Ingredient Class'''
+    in_shopping_cart = db.Column(db.Boolean, default=False)
 
-    __tablename__ = 'ingredients'
-
-    id = db.Column(db.Integer, primary_key=True)
-    
-    ingredient_title = db.Column(db.Text, nullable=False, unique=True)
 
 class Allergy(db.Model):
-    '''Connects Ingredients to Users. Used for tracking allergies'''
+    '''Tracks ingredients that users are allergic to. Used in "excludeIngredients" parameter of API call'''
 
     __tablename__ = 'allergies'
 
     id = db.Column(db.Integer, primary_key=True)
 
-    ingredient_id = db.Column(db.Integer, db.ForeignKey('ingredients.id', ondelete='CASCADE'))
+    ingredient_id= db.Column(db.Text, db.ForeignKey('ingredients.id', ondelete='cascade'), nullable=False)
 
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='cascade'), nullable=False)
+
+
+class Ingredient(db.Model):
+    '''Ingredients in the system'''
+
+    __tablename__ = 'ingredients'
+
+    id = db.Column(db.Text, primary_key=True)
+
+class Recipe(db.Model):
+
+    __tablename__ = 'recipes'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=False)
+
+
+
+def add_allergy(allergies, user):
+    '''Add allergies to user. If allergy does not exist, create new ingredient and add to user. If allergy exists, add to user'''
+
+    allergy_pattern = r'[a-zA-Z]+' # regex pattern to extract all words from allergies string
+    allergies = re.findall(allergy_pattern, allergies)
+
+    for allergy in allergies:
+        existing_allergy = Ingredient.query.filter(Ingredient.id==allergy).one_or_none()
+
+        if not existing_allergy:
+            new_allergy = Ingredient(id=allergy)
+            user.allergies.append(new_allergy)
+        elif existing_allergy not in user.allergies:
+            user.allergies.append(existing_allergy)
+        db.session.commit()

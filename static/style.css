@@ -15,9 +15,74 @@
     height: 60vh;
 }
 
-.recipe-link {
+/* .recipe-link-main {
     position: absolute;
     left: 23%;
     right: 23%;
-    bottom: 20px; /* Adjust this value to move the link up from the bottom */
+    bottom: 20px;
+} */
+
+.recipe-link-user {
+    position: absolute;
+    left: 8%;
+    bottom: 20px;
 }
+
+.favorite-btn {
+    position: absolute;
+    left: 38%;
+    bottom: 20px;
+}
+
+.cart-btn {
+    position: absolute;
+    left: 77%;
+    bottom: 20px;
+}
+
+.bg-peach {
+    background-color: #FBE7C6;
+}
+
+#user_favorites {
+    border-radius: 5px;
+}
+
+.profile-icon {
+    max-height: 5vh;
+    max-width: 10vw;
+}
+
+.hidden {
+    display: none;
+}
+
+.btn {
+    cursor: pointer;
+}
+
+.fa-cart-shopping {
+    color: #76bdf3
+}
+
+.cart-item {
+    color: #fb1818!important;
+}
+
+.recipe-details-body {
+    background-color: #FBE7C6;
+}
+
+.inline {
+    display: inline;
+}
+
+.source {
+    font-size: 1em;
+}
+
+.fa-spinner {
+    font-size: 10rem;
+    margin-top: 2%;
+    text-align: center;
+  }

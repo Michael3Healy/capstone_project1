@@ -8,28 +8,39 @@
     <div class="row justify-content-center text-center align-items-center">
         <div class="col-12 mt-3 search_headers">
             <h1>Search For Recipes</h1>
-            <h2>Filter by ingredients, diet, and cuisine</h2>
+            <h2>Filter by ingredients and diet</h2>
         </div>
-        <div class="row justify-content-start mb-3">
+        <div class="row justify-content-start mb-1">
             <div class="col-8 justify-self-start">
-                <label for="ingredient_list" class="form-label">Ingredients</label>
-                <input type="text" class="form-control" id="ingredient_list" name="ingredient_list">
+                <label for="ingredient_list_include" class="form-label">Ingredients (include)</label>
+                <input type="text" class="form-control" id="ingredient_list_include" name="ingredient_list_include">
             </div>
-            <div class="col-1 align-self-end">
-                <button class="btn btn-primary" id="submit_search">Search</button>
+            <div class="col-4">
+                <label for="ingredient_list" class="form-label">Ingredients (exclude)</label>
+                <input type="text" class="form-control" id="ingredient_list_exclude" name="ingredient_list_exclude">
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-6">
+                <label for="diet" class="form-label">Diet</label>
+                <select id="diet" name="diet" class="form-control">
+                    <option value="none">None</option>
+                    <option value="vegetarian">Vegetarian</option>
+                    <option value="lacto_vegetarian">Lacto-Vegetarian</option>
+                    <option value="ovo_vegetarian">Ovo-Vegetarian</option>
+                    <option value="vegan">Vegan</option>
+                    <option value="pescetarian">Pescetarian</option>
+                    <option value="paleo">Paleo</option>
+                    <option value="low_fodmap">Low FODMAP</option>
+                    <option value="whole30">Whole30</option>
+                </select>
+            </div>
+            <div class="col-6 text-center align-content-end">
+                <button class="btn btn-primary btn-lg" id="submit_search">Search</button>
             </div>
         </div>
     </div>
     <div class="row bg-secondary shadow-lg" id="search_results">
-        <div class="col-3 recipe">
-            asdflakdjflkj
-        </div>
-        <div class="col-3 recipe">
-            asdflakdjflkj
-        </div>
-        <div class="col-3 recipe">
-            asdflakdjflkj
-        </div>
     </div>
 </div>
 
