@@ -269,7 +269,7 @@ def send_email():
     rendered_template = render_template('users/email_template.html', recipes=recipes)
     msg = Message('Your Shopping Cart',
                     sender="easyrecipes.shopping@gmail.com",
-                    recipients=[g.user.email])
+                    recipients=["michael30healy@gmail.com"])
     msg.html = rendered_template
     mail.send(msg)
     flash('Email sent!', 'success')

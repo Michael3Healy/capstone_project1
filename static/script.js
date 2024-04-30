@@ -19,6 +19,7 @@ class RecipeSearch {
 			this.recipeSearchBtn.addEventListener('click', this.getSpecificRecipes.bind(this));
 			// Await the creation of the user
 			this.curr_user = await User.makeUser();
+			mainPage.generateFruitMarkup();
 		} else if (window.location.pathname === '/users/details') {
 			// If on the user favorites page, show user favorites
 			await this.showUserFavorites();
@@ -51,7 +52,7 @@ class RecipeSearch {
 
 	hideLoadingView() {
 		document.querySelector('.fa-spinner').remove();
-		document.querySelector('body').classList.remove('hide-scroll')
+		document.querySelector('body').classList.remove('hide-scroll');
 	}
 
 	async showUserFavorites() {
@@ -70,20 +71,6 @@ class RecipeSearch {
 		this.makeRecipes();
 		this.hideLoadingView();
 		this.generateHtmlMarkup(userFavoritesSection);
-	}
-
-	async seedDatabase() {
-		const randomRecipes = await this.getRandomRecipes();
-		this.recipes = randomRecipes;
-		this.makeRecipes();
-		const serializedRecipes = this.recipes.map(recipe => recipe.serialize());
-		axios.post('http://127.0.0.1:5000/recipes/seed', { recipes: serializedRecipes });
-	}
-
-	async getRecipesFromDatabase() {
-		const response = await axios.get('http://127.0.0.1:5000/users/1/recipes');
-		this.recipes = response.data;
-		this.generateHtmlMarkup(this.resultsSection);
 	}
 
 	async getSpecificRecipes() {
@@ -207,7 +194,12 @@ class RecipeSearch {
 			allRecipesMarkup += recipeMarkup;
 		}
 		section.innerHTML = allRecipesMarkup;
+		if (section.innerHTML !== '') {
+			section.classList.add('pb-3')
+		}
+		
 		this.addBtnEventListeners();
+		mainPage.generateFruitMarkup();
 	}
 
 	validSearch(allRecipes) {
@@ -395,6 +387,25 @@ class User {
 	}
 }
 
+class PageStyle {
+	constructor(name) {
+		this.name = name;
+	}
+
+	generateFruitMarkup() {
+		const fruitSectionLeft = document.querySelector('.fruit-left');
+		const fruitSectionRight = document.querySelector('.fruit-right');
+		let fruitMarkup = '';
+
+		while (fruitSectionLeft.offsetHeight < Math.max(document.body.scrollHeight * 0.98, window.innerHeight * 0.9)) {
+			console.log(fruitSectionLeft.offsetHeight, document.documentElement.scrollHeight)
+			fruitMarkup += `<p><i class="fa-solid fa-lemon fa-2xl" style="color: #FFD43B;"></i></p> \
+			<p><i class="fa-solid fa-apple-whole fa-2xl" style="color: #e10505;"></i></p>`;
+			fruitSectionLeft.innerHTML = fruitMarkup;
+			fruitSectionRight.innerHTML = fruitMarkup;
+		}
+	}
+}
+
 let home = new RecipeSearch();
-// home.seedDatabase();
-// home.getRecipesFromDatabase();
+let mainPage = new PageStyle('main');

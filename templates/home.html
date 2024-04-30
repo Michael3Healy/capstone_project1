@@ -3,6 +3,8 @@
 {% block body_class %}home{% endblock %}
 
 {% block content %}
+<div class="fruit fruit-left"></div>
+<div class="fruit fruit-right"></div>
 
 <div class="container">
     <div class="row justify-content-center text-center align-items-center">
@@ -47,7 +49,7 @@
 <script>
     // Set the default value of the diet option to the user's diet
     const dietSelect = document.querySelector('#diet');
-    const userDiet = '{{ g.user.diet }}';
+    const userDiet = '{{ g.user.diet | default("none") }}';
     dietSelect.value = userDiet;
 </script>
 

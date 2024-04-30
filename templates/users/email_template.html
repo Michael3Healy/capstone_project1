@@ -5,7 +5,7 @@
     {% endfor %}
 </ul>
 <h3>Aggregate Ingredient List</h3>
-<ul>
+<ul class="column-list">
     {% for recipe in recipes %}
     {% for ingredient in recipe.extendedIngredients %}
     <li>{{ ingredient.original}}</li>

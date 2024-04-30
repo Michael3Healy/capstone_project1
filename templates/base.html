@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
-<body class="{% block body_class %}{% endblock %}">
+<body class="{% block body_class %}home{% endblock %}">
   <nav class="navbar navbar-light bg-primary justify-content-between">
     <div class="container">
       <a href="/" class="navbar-brand text-light">Easy Recipes</a>
@@ -22,8 +22,8 @@
         </li>
         {% else %}
         <li>
-          <a href="/users/details" data-bs-placement="left" data-bs-toggle="tooltip" data-bs-title="View Profile"><img src="{{ g.user.image_url }}" alt="View Profile"
-              class="profile-icon img-fluid me-4"></a>
+          <a href="/users/details" data-bs-placement="left" data-bs-toggle="tooltip" data-bs-title="View Profile"><img
+              src="{{ g.user.image_url }}" alt="View Profile" class="profile-icon img-fluid me-4"></a>
         </li>
         {% endif %}
         {% if request.path != '/users/shopping_cart' %}
@@ -52,6 +52,18 @@
   </div>
   {% block content %}
   {% endblock %}
+  <footer>
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-12 text-center">
+          <p class="footer-text inline"><em>Created By: </em>Michael Healy<a href="https://github.com/Michael3Healy"
+              target="_blank" class="footer-text"><i class="fa-brands fa-github mx-2"></i></a><a
+              href="https://www.linkedin.com/in/michael3healy/" target="_blank" class="footer-text"><i
+                class="fa-brands fa-linkedin"></i></a></p>
+        </div>
+      </div>
+    </div>
+  </footer>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.8/axios.min.js"></script>
   <script src="{{ url_for('static', filename='script.js') }}"></script>
@@ -61,6 +73,9 @@
     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
       return new bootstrap.Tooltip(tooltipTriggerEl)
     })
+    // Adjust body margin to account for footer height
+    const footerHeight = document.querySelector('footer').offsetHeight;
+		document.querySelector('body').style.marginBottom = `${footerHeight + 20}px`;
   </script>
 </body>
 </html>
