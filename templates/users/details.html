@@ -7,15 +7,18 @@
 <div class="container">
     <div class="row justify-content-center" style="border-radius: 5px;">
         <div class="col-4">
-            <img src="{{g.user.image_url}}">
+            <img src="{{g.user.image_url}}" style="max-height: 30vh;">
         </div>
         <div class="col-6 text-center">
             <h3>{{ g.user.username }}</h3>
             <ul>
                 <li><strong>Email: </strong>{{ g.user.email }}</li>
                 <li><strong>Diet: </strong>{{ g.user.diet }}</li>
-                <li><strong>Allergies: </strong>{% for allergy in g.user.allergies %}{{ allergy.id }}{% endfor %}</li>
+                <li><strong>Allergies: </strong>{% for allergy in g.user.allergies %}{{ allergy.id}}{% if not loop.last %}, {% endif %}{% endfor %}</li>
             </ul>
+        </div>
+        <div class="col-2 align-content-end">
+            <a href="/users/edit" class="btn btn-primary">Edit Profile</a>
         </div>
     </div>
     <div class="row mt-3">

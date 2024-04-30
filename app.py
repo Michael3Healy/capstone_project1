@@ -4,7 +4,7 @@ from functools import wraps
 from sqlalchemy.exc import IntegrityError
 from flask_mail import Mail, Message
 from forms import UserAddForm, UserEditForm, LoginForm
-from models import db, connect_db, User, Favorites, Allergy, Ingredient, Recipe, add_allergy
+from models import db, connect_db, User, Favorites, Allergy, Ingredient, Recipe, set_allergies
 import re
 from pdb import set_trace
 import requests
@@ -237,10 +237,13 @@ def edit_user():
         if User.authenticate(g.user.username, form.password.data):
             g.user.username = form.username.data or g.user.username
             g.user.email = form.email.data or g.user.email
-            g.user.image_url = form.image_url.data or g.user.image_url
-            g.user.diet = form.diet.data or g.user.diet
+            g.user.image_url = form.image_url.data or url_for('static', filename='images/default-pic.png')
+            g.user.diet = form.diet.data
+            allergies = form.dietary_restrictions.data
+            set_allergies(allergies, g.user)
+            
             db.session.commit()
-            return redirect(url_for('user_details'))
+            return redirect(url_for('get_user_details'))
         flash('Incorrect password', 'danger')
     return render_template('users/edit.html', form=form)
 
@@ -266,10 +269,11 @@ def send_email():
     rendered_template = render_template('users/email_template.html', recipes=recipes)
     msg = Message('Your Shopping Cart',
                     sender="easyrecipes.shopping@gmail.com",
-                    recipients=["michael30healy@gmail.com"])
+                    recipients=[g.user.email])
     msg.html = rendered_template
     mail.send(msg)
-    return jsonify({"Result": "Email sent"})
+    flash('Email sent!', 'success')
+    return redirect(url_for('show_shopping_cart'))
 
 # Recipe Routes
 

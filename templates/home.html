@@ -17,7 +17,8 @@
             </div>
             <div class="col-4">
                 <label for="ingredient_list" class="form-label">Ingredients (exclude)</label>
-                <input type="text" class="form-control" id="ingredient_list_exclude" name="ingredient_list_exclude">
+                <input type="text" class="form-control" id="ingredient_list_exclude" name="ingredient_list_exclude"
+                 value="{% for allergy in g.user.allergies %}{{ allergy.id }}{% if not loop.last %}, {% endif %}{% endfor %}">
             </div>
         </div>
         <div class="row mb-3">
@@ -43,6 +44,11 @@
     <div class="row bg-secondary shadow-lg" id="search_results">
     </div>
 </div>
-
+<script>
+    // Set the default value of the diet option to the user's diet
+    const dietSelect = document.querySelector('#diet');
+    const userDiet = '{{ g.user.diet }}';
+    dietSelect.value = userDiet;
+</script>
 
 {% endblock %}

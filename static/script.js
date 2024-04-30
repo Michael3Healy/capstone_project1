@@ -42,13 +42,16 @@ class RecipeSearch {
 	}
 
 	showLoadingView(section) {
+		document.querySelector(section).innerHTML = '';
 		const loadingSpinner = document.createElement('i');
 		loadingSpinner.classList.add('fa-solid', 'fa-spinner', 'fa-spin-pulse');
 		document.querySelector(section).append(loadingSpinner);
+		document.querySelector('body').classList.add('hide-scroll');
 	}
 
 	hideLoadingView() {
 		document.querySelector('.fa-spinner').remove();
+		document.querySelector('body').classList.remove('hide-scroll')
 	}
 
 	async showUserFavorites() {
@@ -166,6 +169,7 @@ class RecipeSearch {
 
 	generateHtmlMarkup(section) {
 		// Generate HTML markup for each recipe
+		this.hideErrorMsg();
 
 		let allRecipesMarkup = '';
 		for (let recipe of this.recipes) {
@@ -218,6 +222,12 @@ class RecipeSearch {
 			return false;
 		}
 		return true;
+	}
+
+	hideErrorMsg() {
+		if (document.querySelector('.error_msg')) {
+			document.querySelector('.error_msg').remove();
+		}
 	}
 
 	showErrorMsg(section, text) {
@@ -300,17 +310,6 @@ class User {
 		const response = await axios.get(`http://127.0.0.1:5000/users/${this.id}/cart`);
 		this.shoppingCart = response.data;
 	}
-
-
-	// static getUserIdFromUrl() {
-	//     const regex = /\/users\/(\d+)\/details/;
-	//     const match = window.location.pathname.match(regex);
-	//     if (match && match[1]) {
-	//         const id = parseInt(match[1]); // Extract and parse the user ID from the URL
-	// 		return id
-	//     }
-	//     return null;
-	// }
 
 	static async getCurrentUser() {
 		// Get current user from backend

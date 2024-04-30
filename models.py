@@ -27,10 +27,11 @@ class User(db.Model):
 
     diet = db.Column(db.Text)
 
+    dietary_restrictions = db.Column(db.Text)
+
     allergies = db.relationship('Ingredient', backref='users', secondary='allergies', cascade='all, delete')
 
     recipes = db.relationship('Recipe', backref='users', secondary='favorite_recipes', cascade='all, delete')
-
 
     def serialize(self):
         return {
@@ -39,6 +40,7 @@ class User(db.Model):
             'username': self.username,
             'image_url': self.image_url,
             'diet': self.diet,
+            'dietary_restrictions': self.dietary_restrictions,
             'recipes': [recipe.id for recipe in self.recipes],
             'allergies': [allergy.id for allergy in self.allergies]
         }
@@ -55,8 +57,9 @@ class User(db.Model):
             password=hashed_pwd,
             image_url=image_url,
             diet=diet,
+            dietary_restrictions=''
         )
-        add_allergy(allergies, user)
+        set_allergies(allergies, user)
         
         return user
 
@@ -114,18 +117,30 @@ class Recipe(db.Model):
 
 
 
-def add_allergy(allergies, user):
+def set_allergies(allergies, user):
     '''Add allergies to user. If allergy does not exist, create new ingredient and add to user. If allergy exists, add to user'''
+    user.allergies = []
+    user.dietary_restrictions = ''
 
     allergy_pattern = r'[a-zA-Z]+' # regex pattern to extract all words from allergies string
     allergies = re.findall(allergy_pattern, allergies)
 
-    for allergy in allergies:
+    for index, allergy in enumerate(allergies):
         existing_allergy = Ingredient.query.filter(Ingredient.id==allergy).one_or_none()
 
         if not existing_allergy:
             new_allergy = Ingredient(id=allergy)
             user.allergies.append(new_allergy)
+            add_dietary_restrictions(index, user, allergy)
         elif existing_allergy not in user.allergies:
             user.allergies.append(existing_allergy)
+            add_dietary_restrictions(index, user, allergy)
         db.session.commit()
+
+def add_dietary_restrictions(index, user, allergy):
+    '''Add dietary restrictions to user'''
+    if index == 0:
+        user.dietary_restrictions = allergy
+    else:
+        user.dietary_restrictions = user.dietary_restrictions + ', ' + allergy
+    db.session.commit()

@@ -30,6 +30,6 @@ class UserEditForm(FlaskForm):
     diet = SelectField('Diet', choices=[('none', 'None'), ('vegetarian', 'Vegetarian'), ('lacto_vegetarian', 'Lactor-Vegetarian'),
                                                     ('ovo_vegetarian', 'Ovo-Vegetarian'), ('vegan', 'Vegan'), ('pescetarian', 'Pescetarian'),
                                                     ('paleo', 'Paleo'), ('low_fodmap', 'Low FODMAP'), ('whole30', 'Whole30')])
-    allergies = StringField('Allergies')
+    dietary_restrictions = StringField('Allergies')
 
     password = PasswordField('Password', validators=[Length(min=6)])
