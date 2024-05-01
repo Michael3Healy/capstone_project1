@@ -12,19 +12,19 @@ CURR_USER_KEY = "curr_user"
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = (
-    os.environ.get('DATABASE_URL', 'postgresql:///easy_recipes'))
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_ECHO'] = False
-app.config['SECRET_KEY'] = SECRET_KEY
+SECRET_KEY = os.environ.get('SECRET_KEY')
+API_KEY = os.environ.get('API_KEY')
 
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 465
-app.config['MAIL_USERNAME'] = 'easyrecipes.shopping@gmail.com'
-app.config['MAIL_PASSWORD'] = APP_PASSWORD
-app.config['MAIL_USE_TLS'] = False
-app.config['MAIL_USE_SSL'] = True
+# Email Configuration
+MAIL_SERVER = os.environ.get('MAIL_SERVER')
+MAIL_PORT = int(os.environ.get('MAIL_PORT', 465))  # Convert to integer
+MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
+MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'False') == 'True'  # Convert to boolean
+MAIL_USE_SSL = os.environ.get('MAIL_USE_SSL', 'True') == 'True'  # Convert to boolean
+
 mail = Mail(app)
 
 app.app_context().push()
