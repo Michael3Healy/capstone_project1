@@ -6,9 +6,7 @@ from flask_mail import Mail, Message
 from forms import UserAddForm, UserEditForm, LoginForm
 from models import db, connect_db, User, Favorites, Allergy, Ingredient, Recipe, set_allergies
 import re
-from pdb import set_trace
 import requests
-from secret_info import API_KEY, APP_PASSWORD, SECRET_KEY
 
 CURR_USER_KEY = "curr_user"
 
