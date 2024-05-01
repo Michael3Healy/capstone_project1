@@ -5,8 +5,8 @@
 <div class="container">
     <h1 class="display-2 text-center">Shopping Cart</h1>
     {% if not recipes %}
-    <h2>Add recipes here to recieve a shopping list of all necessary ingredients to your email!</h2>
-    {% endif %}
+    <h2>Add recipes here from your profile to recieve a shopping list of all necessary ingredients!</h2>
+    {% else %}
     <div class="row justify-content-center">
         <div class="col-8 text-center bg-secondary mt-3 p-3" style="border-radius: 5px;">
             {% include 'users/email_template.html' %}
@@ -15,7 +15,7 @@
             </form>
         </div>
     </div>
+    {% endif %}
 </div>
-
 
 {% endblock %}

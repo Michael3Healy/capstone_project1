@@ -1,20 +1,19 @@
 {% extends 'base.html' %}
 
-{% block body_class %}home{% endblock %}
-
 {% block content %}
 
 <div class="container">
     <div class="row justify-content-center bg-secondary p-3 m-3" style="border-radius: 5px;">
-        <div class="col-4">
-            <img src="{{g.user.image_url}}" style="max-height: 30vh;">
+        <div class="col-lg-4 col-md-6">
+            <img src="{{g.user.image_url}}" style="max-height: 25vh;">
         </div>
-        <div class="col-4 text-start">
+        <div class="col-lg-4 col-md-6 text-start">
             <h3 class="ms-3">{{ g.user.username }}</h3>
             <ul>
                 <li><strong>Email: </strong>{{ g.user.email }}</li>
-                <li><strong>Diet: </strong>{{ g.user.diet }}</li>
-                <li><strong>Allergies: </strong>{% for allergy in g.user.allergies %}{{ allergy.id}}{% if not loop.last %}, {% endif %}{% endfor %}</li>
+                <li><strong>Diet: </strong>{{ g.user.diet | capitalize }}</li>
+                <li><strong>Allergies: </strong>{% if not g.user.allergies %}None{% endif %}
+                    {% for allergy in g.user.allergies %}{{ allergy.id}}{% if not loop.last %}, {% endif %}{% endfor %}</li>
             </ul>
         </div>
         <div class="col-2 align-content-end">

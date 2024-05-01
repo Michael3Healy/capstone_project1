@@ -7,7 +7,7 @@ bcrypt = Bcrypt()
 db = SQLAlchemy()
 
 def connect_db(app):
-    """Connect db to Flask app"""
+    '''Connect db to Flask app'''
     db.init_app(app)
 
 class User(db.Model):
@@ -27,6 +27,7 @@ class User(db.Model):
 
     diet = db.Column(db.Text)
 
+    # Dietary restrictions are text version of allergies for easier display
     dietary_restrictions = db.Column(db.Text)
 
     allergies = db.relationship('Ingredient', backref='users', secondary='allergies', cascade='all, delete')
@@ -47,7 +48,7 @@ class User(db.Model):
 
     @classmethod
     def register(cls, username, email, password, image_url, diet, allergies):
-        """Register user. Hashes password and adds user to system."""
+        '''Register user. Hashes password and adds user to system.'''
 
         hashed_pwd = bcrypt.generate_password_hash(password).decode('UTF-8')
 
@@ -65,7 +66,7 @@ class User(db.Model):
 
     @classmethod
     def authenticate(cls, username, password):
-        """Find user with `username` and `password`. If can't find matching user (or if password is wrong), returns False."""
+        '''Find user with `username` and `password`. If can't find matching user (or if password is wrong), returns False.'''
 
         user = cls.query.filter_by(username=username).first()
 

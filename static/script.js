@@ -13,21 +13,19 @@ class RecipeSearch {
 	}
 
 	async initialize() {
-		// Check the URL path to determine which page you're on
+		// Initialize the page
+
 		if (window.location.pathname === '/') {
-			// Attach event listener to search button (home page)
-			this.recipeSearchBtn.addEventListener('click', this.getSpecificRecipes.bind(this));
-			// Await the creation of the user
-			this.curr_user = await User.makeUser();
-			mainPage.generateFruitMarkup();
+			this.recipeSearchBtn.addEventListener('click', this.getSpecificRecipes.bind(this)); // Attach event listener to search button (home page)
+			this.curr_user = await User.makeUser(); // Await the creation of the user
 		} else if (window.location.pathname === '/users/details') {
-			// If on the user favorites page, show user favorites
-			await this.showUserFavorites();
+			await this.showUserFavorites(); // If on the user favorites page, show user favorites
 		}
 	}
 
 	addBtnEventListeners() {
 		// Add event listeners to favorite and shopping cart buttons
+
 		this.favoriteBtns = document.querySelectorAll('.favorite-btn');
 		this.favoriteBtns.forEach(button => {
 			if (this.curr_user === 'Not logged in') {
@@ -43,6 +41,8 @@ class RecipeSearch {
 	}
 
 	showLoadingView(section) {
+		// Show loading spinner
+
 		document.querySelector(section).innerHTML = '';
 		const loadingSpinner = document.createElement('i');
 		loadingSpinner.classList.add('fa-solid', 'fa-spinner', 'fa-spin-pulse');
@@ -51,12 +51,15 @@ class RecipeSearch {
 	}
 
 	hideLoadingView() {
+		// Hide loading spinner
+
 		document.querySelector('.fa-spinner').remove();
 		document.querySelector('body').classList.remove('hide-scroll');
 	}
 
 	async showUserFavorites() {
 		// Show user's favorite recipes
+
 		this.showLoadingView('#user_favorites');
 		if (!this.curr_user) {
 			this.curr_user = await User.makeUser();
@@ -86,6 +89,8 @@ class RecipeSearch {
 			// Otherwise, show recipes based on the ingredients and diet entered
 			const ingredients = this.getIngredients();
 			const diet = this.dietInput.value;
+
+			// Make include ingredients and exclude ingredients into strings for URL
 			if (ingredients[0]) {
 				ingredients[0] = ingredients[0].join(',');
 			}
@@ -109,6 +114,7 @@ class RecipeSearch {
 
 	inputsEmpty() {
 		// Check if input fields are empty
+
 		if (!this.includeIngredientInput.value && !this.excludeIngredientInput.value && this.dietInput.value === 'none') {
 			return true;
 		}
@@ -117,6 +123,7 @@ class RecipeSearch {
 
 	async getRandomRecipes() {
 		// Retrieve list of random recipes
+
 		try {
 			const response = await axios.get('http://127.0.0.1:5000/recipes/random');
 			const randomRecipes = response.data.recipes;
@@ -128,6 +135,7 @@ class RecipeSearch {
 
 	makeRecipes() {
 		// Turn each recipe into instance of Recipe class
+
 		const recipeInstances = [];
 
 		for (let recipe of this.recipes) {
@@ -139,6 +147,7 @@ class RecipeSearch {
 
 	async getBulkRecipeInfo() {
 		// Get additional info for each recipe
+
 		const recipeIds = this.recipes.map(recipe => recipe.id);
 		const response = await axios.post('http://127.0.0.1:5000/recipes/info', { ids: recipeIds });
 		const recipesInfo = response.data;
@@ -154,32 +163,41 @@ class RecipeSearch {
 		return [includeIngredients, excludeIngredients];
 	}
 
-	generateHtmlMarkup(section) {
-		// Generate HTML markup for each recipe
-		this.hideErrorMsg();
+	getBtnMarkup(recipe) {
+		// Generate HTML markup for favorite and shopping cart buttons
 
-		let allRecipesMarkup = '';
-		for (let recipe of this.recipes) {
-			const shortenedSummary = recipe.summary.slice(0, 302 - recipe.title.length) + '...';
-
-			// Change markup based on whether recipe is a favorite or not
-			let favBtnClass, favoriteToggle;
-			if (this.curr_user instanceof User) {
-				favoriteToggle = this.curr_user.favoriteRecipeIds.includes(recipe.id) ? 'Unfavorite' : 'Favorite';
-				favBtnClass = this.curr_user.favoriteRecipeIds.includes(recipe.id) ? 'btn-danger' : 'btn-success';
-			} else {
-				favoriteToggle = 'Favorite';
-				favBtnClass = 'btn-success';
-			}
-
-			let cartBtnMarkup = '';
+		let favBtnClass, favoriteToggle;
+		if (this.curr_user instanceof User) {
+			favoriteToggle = this.curr_user.favoriteRecipeIds.includes(recipe.id) ? 'Unfavorite' : 'Favorite';
+			favBtnClass = this.curr_user.favoriteRecipeIds.includes(recipe.id) ? 'btn-danger' : 'btn-success';
+		} else {
+			favoriteToggle = 'Favorite';
+			favBtnClass = 'btn-success';
+		}
+		let cartBtnMarkup = '';
 			if (window.location.pathname === '/users/details') {
 				const cartIconClass = this.curr_user.shoppingCart.includes(recipe.id) ? 'cart-item' : '';
 				cartBtnMarkup = `<button type="button" class="btn btn-info cart-btn" data-recipe-id="${recipe.id}"><i class="fa-solid fa-cart-shopping ${cartIconClass}"></i></button>`;
 			}
+		return [favoriteToggle, favBtnClass, cartBtnMarkup];
+	}
+
+	generateHtmlMarkup(section) {
+		// Generate HTML markup for each recipe
+
+		this.hideErrorMsg(); // Hide error message if it exists
+		let allRecipesMarkup = '';
+		for (let recipe of this.recipes) {
+			const shortenedSummary = recipe.summary.slice(0, 302 - recipe.title.length) + '...';
+
+			// Change favorite/cart button text and color based on whether recipe is in user's favorites/cart
+			let btnMarkup = this.getBtnMarkup(recipe);
+			const favoriteToggle = btnMarkup[0];
+			const favBtnClass = btnMarkup[1];
+			const cartBtnMarkup = btnMarkup[2];	
 
 			// Generate HTML markup for each recipe
-			const recipeMarkup = `<div class="col-3 mt-3 recipe"> \
+			const recipeMarkup = `<div class="col-lg-3 col-md-4 col-sm-6 mt-3 recipe"> \
 				<div class="card"> \
 					<img src="${recipe.image}" class="card-img-top" alt="Image of Recipe"> \
 					<div class="card-body"> \
@@ -194,12 +212,12 @@ class RecipeSearch {
 			allRecipesMarkup += recipeMarkup;
 		}
 		section.innerHTML = allRecipesMarkup;
+
+		// Padding added here so there is no visible div when no recipes are found
 		if (section.innerHTML !== '') {
 			section.classList.add('pb-3')
 		}
-		
 		this.addBtnEventListeners();
-		mainPage.generateFruitMarkup();
 	}
 
 	validSearch(allRecipes) {
@@ -223,7 +241,6 @@ class RecipeSearch {
 	}
 
 	showErrorMsg(section, text) {
-		// Show error message
 
 		// If error message already exists, remove it
 		if (document.querySelector('.error_msg')) {
@@ -259,52 +276,36 @@ class Recipe {
 		this.prepTime = recipeInfo.readyInMinutes;
 		this.image = recipeInfo.image;
 	}
-
-	serialize() {
-		return {
-			id: this.id,
-			title: this.title,
-			cuisine: this.cuisine,
-			summary: this.summary,
-			instructions: this.instructions,
-			sourceUrl: this.sourceUrl,
-			prepTime: this.prepTime,
-			image: this.image,
-		};
-	}
 }
 
 class User {
-	constructor(id, email, username, image_url, diet, recipes, allergies) {
+	constructor(id, recipes) {
 		this.id = id;
-		this.email = email;
-		this.username = username;
-		this.image_url = image_url;
-		this.diet = diet;
 		this.recipes = recipes;
-		this.allergies = allergies;
 		this.shoppingCart = [];
-
 		this.favoriteRecipeIds = [];
 		this.getShoppingCart();
 		this.getRecipes();
 	}
 
 	async getRecipes() {
-		// Backend route to retrieve user's favorite recipes
+		// Retrieves user's favorite recipes from backend
+
 		const response = await axios.get(`http://127.0.0.1:5000/users/${this.id}/recipes`);
 		this.favoriteRecipeIds = response.data.map(recipe => recipe.id);
 		this.recipes = response.data;
 	}
 
 	async getShoppingCart() {
-		// Backend route to retrieve user's shopping cart
+		// Retrieves user's shopping cart from backend
+
 		const response = await axios.get(`http://127.0.0.1:5000/users/${this.id}/cart`);
 		this.shoppingCart = response.data;
 	}
 
 	static async getCurrentUser() {
 		// Get current user from backend
+
 		const user = await axios.get(`http://127.0.0.1:5000/users/current`);
 		if (user != {}) {
 			return user.data;
@@ -314,9 +315,10 @@ class User {
 
 	static async makeUser() {
 		// Create a new user instance
+
 		const user = await User.getCurrentUser();
 		if (user) {
-			const newUser = new User(user.id, user.email, user.username, user.image_url, user.diet, user.recipes, user.allergies);
+			const newUser = new User(user.id, user.recipes);
 			newUser.favoriteRecipeIds = user.recipes.map(recipe => recipe.id);
 			return newUser;
 		} else {
@@ -326,6 +328,7 @@ class User {
 
 	async toggleFavorite(evt) {
 		// Toggle favorite status of recipe
+
 		const favoriteBtn = evt.target;
 		const recipeId = favoriteBtn.dataset.recipeId;
 		if (this.favoriteRecipeIds.includes(parseInt(recipeId))) {
@@ -344,6 +347,7 @@ class User {
 
 	async removeFavorite(recipeId) {
 		// Remove recipe from user's favorites
+
 		await axios.delete(`http://127.0.0.1:5000/users/${this.id}/recipes`, { data: { recipe_id: recipeId } });
 		const indexToRemove = this.favoriteRecipeIds.indexOf(parseInt(recipeId));
 		this.favoriteRecipeIds.splice(indexToRemove, 1);
@@ -351,6 +355,7 @@ class User {
 
 	async addFavorite(recipeId) {
 		// Add recipe to user's favorites
+
 		const recipe = new Recipe(recipeId);
 		await recipe.getInfo();
 		await axios.post(`http://127.0.0.1:5000/users/${this.id}/recipes`, { recipe_id: recipe.id });
@@ -359,6 +364,7 @@ class User {
 
 	async toggleCart(evt) {
 		// Add recipe to user's shopping cart
+
 		let cartBtn;
 		if (evt.target.tagName === 'I') {
 			cartBtn = evt.target.parentElement;
@@ -408,4 +414,5 @@ class PageStyle {
 }
 
 let home = new RecipeSearch();
-let mainPage = new PageStyle('main');
+let allPages = new PageStyle('all');
+allPages.generateFruitMarkup();

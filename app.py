@@ -8,7 +8,7 @@ from models import db, connect_db, User, Favorites, Allergy, Ingredient, Recipe,
 import re
 from pdb import set_trace
 import requests
-from secret_info import API_KEY, APP_PASSWORD
+from secret_info import API_KEY, APP_PASSWORD, SECRET_KEY
 
 CURR_USER_KEY = "curr_user"
 
@@ -19,7 +19,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = (
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', "ejcurbbwornhcbsir")
+app.config['SECRET_KEY'] = SECRET_KEY
 
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
@@ -36,6 +36,7 @@ connect_db(app)
 
 # Helper Functions
 
+# Decorator to require login for certain routes
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -45,24 +46,25 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+# Before each request, add user to Flask global if logged in
 @app.before_request
 def add_user_to_g():
-    """If logged in, add curr user to Flask global for easier access in templates and view functions."""
+    '''If logged in, add curr user to Flask global for easier access in templates and view functions.'''
 
     if CURR_USER_KEY in session:
         g.user = User.query.get(session[CURR_USER_KEY])
     else:
         g.user = None
 
-
+# Login and Logout Functions to update session
 def do_login(user):
-    """Log in user."""
+    '''Log in user.'''
 
     session[CURR_USER_KEY] = user.id
 
 
 def do_logout():
-    """Logout user. Boolean used in view functions to check if logout actually took place"""
+    '''Logout user. Boolean used in view functions to check if logout actually took place'''
 
     if CURR_USER_KEY in session:
         del session[CURR_USER_KEY]
@@ -74,28 +76,36 @@ def do_logout():
 
 @app.route('/recipes/random')
 def get_random_recipes():
-    resp = requests.get('https://api.spoonacular.com/recipes/random', params={'apiKey': API_KEY, 'number': 20})
+    # Get 16 random recipes
+
+    resp = requests.get('https://api.spoonacular.com/recipes/random', params={'apiKey': API_KEY, 'number': 16})
     return jsonify(resp.json())
 
 
 @app.route('/recipes/complexSearch')
 def get_specific_recipes():
+    # Get recipes based on user's search parameters
+
     include_ingredients = request.args['includeIngredients']
     exclude_ingredients = request.args['excludeIngredients']
     diet = request.args['diet']
     resp = requests.get('https://api.spoonacular.com/recipes/complexSearch', params={'apiKey': API_KEY, 'includeIngredients': include_ingredients, 
-                                                                                'excludeIngredients': exclude_ingredients, 'diet': diet, 'number': 2})
+                                                                                'excludeIngredients': exclude_ingredients, 'diet': diet, 'number': 8})
     return jsonify(resp.json())
 
 
 @app.route('/recipes/<int:recipe_id>/information')
 def get_recipe_info(recipe_id):
+    # Get detailed information about a specific recipe
+
     resp = requests.get(f'https://api.spoonacular.com/recipes/{recipe_id}/information', params={'apiKey': API_KEY})
     return jsonify(resp.json())
 
 
 @app.route('/recipes/info', methods=['POST'])
 def get_bulk_recipe_info():
+    # Get detailed information about multiple recipes
+
     recipe_ids = ','.join(str(id) for id in request.json.get('ids', []))
     resp = requests.get('https://api.spoonacular.com/recipes/informationBulk', params={'apiKey': API_KEY, 'ids': recipe_ids})
     return jsonify(resp.json())
@@ -103,6 +113,8 @@ def get_bulk_recipe_info():
 
 @app.route('/users/current')
 def get_current_user():
+    # Get current user's information
+
     if g.user:
         return jsonify(g.user.serialize()), 200
     return jsonify(None)
@@ -110,15 +122,18 @@ def get_current_user():
 
 @app.route('/users/<user_id>/recipes')
 def get_saved_recipes(user_id):
-    # Get all saved recipes for a user
+    # Get all saved recipes for a user as well as detailed information about each recipe
+
     user = User.query.get_or_404(user_id)
     recipes = ','.join(str(recipe.id) for recipe in user.recipes)
     resp = requests.get('https://api.spoonacular.com/recipes/informationBulk', params={'apiKey': API_KEY, 'ids': recipes})
     return jsonify(resp.json())
 
+
 @app.route('/users/<user_id>/recipes', methods=['DELETE'])
 def delete_saved_recipe(user_id):
     # Delete a saved recipe from user's list of saved recipes
+
     user = User.query.get_or_404(user_id)
     recipe_id = request.json['recipe_id']
     recipe = Recipe.query.get_or_404(recipe_id)
@@ -127,9 +142,11 @@ def delete_saved_recipe(user_id):
     db.session.commit()
     return jsonify({"Result": "Deleted"}), 200
 
+
 @app.route('/users/<user_id>/recipes', methods=['POST'])
 def save_recipe(user_id):
     # Save a recipe to user's list of saved recipes
+
     user = User.query.get_or_404(user_id)
     recipe_id = request.json['recipe_id']
     saved_recipe = Recipe(id=recipe_id)
@@ -141,6 +158,7 @@ def save_recipe(user_id):
 @app.route('/users/<user_id>/cart', methods=['PATCH'])
 def toggle_cart_status(user_id):
     # Add/remove a recipe from user's shopping cart by toggling status in favorite_recipes table
+
     user = User.query.get_or_404(user_id)
     cart_item = Favorites.query.filter(Favorites.user_id==user.id, Favorites.recipe_id==request.json['recipe_id']).first()
     if cart_item.in_shopping_cart == False:
@@ -150,21 +168,22 @@ def toggle_cart_status(user_id):
     db.session.commit()
     return jsonify({"Result": "Added/Removed from cart"}), 200
 
+
 @app.route('/users/<user_id>/cart', methods=['GET'])
 def get_shopping_cart(user_id):
     # Get all recipes in user's shopping cart
+
     user = User.query.get_or_404(user_id)
     shopping_cart = Favorites.query.filter(Favorites.user_id==user.id, Favorites.in_shopping_cart==True).all()
     recipe_ids = [recipe.recipe_id for recipe in shopping_cart]
     return jsonify(recipe_ids)
 
+
 # Authentication Routes
 
 @app.route('/register', methods=["GET", "POST"])
 def register():
-    """Handle user registration. Create new user and add to DB. Redirect to home page.
-    If form not valid, render form. If there already is a user with that username: flash message
-    and render form again."""
+    '''Handle user registration: Create new user and add to DB. Redirect to home page.'''
 
     form = UserAddForm()
     if form.validate_on_submit():
@@ -176,34 +195,32 @@ def register():
         except IntegrityError:
             flash("Username/email already taken", 'danger')
             return render_template('users/register.html', form=form)
-
         do_login(user)
         return redirect("/")
     else:
-        
         return render_template('users/register.html', form=form)
         
 
 @app.route('/login', methods=["GET", "POST"])
 def login():
-    """Handle user login."""
+    '''Handle user login.'''
 
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.authenticate(form.username.data,
-                                 form.password.data)
+        user = User.authenticate(form.username.data, form.password.data)
         if user:
             do_login(user)
             flash(f"Hello, {user.username}!", "success")
             return redirect("/")
-
-        flash("Invalid credentials", 'danger')
-
+        else:
+            flash("Invalid credentials", 'danger')
     return render_template('users/login.html', form=form)
+
 
 @app.route('/logout')
 def logout():
     '''Handle user logout'''
+
     if do_logout():
         flash('Successfully logged out', 'success')
     else:
@@ -232,19 +249,21 @@ def get_user_details():
 @login_required
 def edit_user():
     '''Edit user details'''
+
     form = UserEditForm(obj=g.user)
     if form.validate_on_submit():
         if User.authenticate(g.user.username, form.password.data):
+            # Update user details or keep the same if no input
             g.user.username = form.username.data or g.user.username
             g.user.email = form.email.data or g.user.email
             g.user.image_url = form.image_url.data or url_for('static', filename='images/default-pic.png')
             g.user.diet = form.diet.data
             allergies = form.dietary_restrictions.data
             set_allergies(allergies, g.user)
-            
             db.session.commit()
             return redirect(url_for('get_user_details'))
-        flash('Incorrect password', 'danger')
+        else:
+            flash('Incorrect password', 'danger')
     return render_template('users/edit.html', form=form)
 
 
@@ -252,6 +271,7 @@ def edit_user():
 @login_required
 def show_shopping_cart():
     '''Show user's shopping cart'''
+
     shopping_cart = Favorites.query.filter(Favorites.user_id==g.user.id, Favorites.in_shopping_cart==True).all()
     recipe_ids = [recipe.recipe_id for recipe in shopping_cart]
     recipe_ids = ','.join(str(id) for id in recipe_ids)
@@ -261,45 +281,37 @@ def show_shopping_cart():
 
 @app.route('/send_email', methods=['POST'])
 def send_email():
+    # Send email to user with shopping cart
+
+    # Get recipes in shopping cart
     shopping_cart = Favorites.query.filter(Favorites.user_id==g.user.id, Favorites.in_shopping_cart==True).all()
     recipe_ids = [recipe.recipe_id for recipe in shopping_cart]
     string_recipe_ids = ','.join(str(id) for id in recipe_ids)
     resp = requests.get('https://api.spoonacular.com/recipes/informationBulk', params={'apiKey': API_KEY, 'ids': string_recipe_ids})
     recipes = resp.json()
+
+    # Render email template and send email
     rendered_template = render_template('users/email_template.html', recipes=recipes)
-    msg = Message('Your Shopping Cart',
-                    sender="easyrecipes.shopping@gmail.com",
-                    recipients=["michael30healy@gmail.com"])
+    msg = Message('Your Shopping Cart', sender="easyrecipes.shopping@gmail.com", recipients=[g.user.email])
     msg.html = rendered_template
     mail.send(msg)
     flash('Email sent!', 'success')
     return redirect(url_for('show_shopping_cart'))
+
 
 # Recipe Routes
 
 @app.route('/recipes/<int:recipe_id>/details')
 def show_recipe_details(recipe_id):
     # Shows details about recipe (instructions, summary, video, etc.)
+    
     resp = requests.get(f'https://api.spoonacular.com/recipes/{recipe_id}/information', params={'apiKey': API_KEY})
     results = resp.json()
-    
-    # Get ingredient name, unit, and amount for each ingredient in recipe
-    ingredient_results = results["extendedIngredients"]
-    ingredients = []
-    for ingredient in ingredient_results:
-        ingredient_tuple = (ingredient["name"], ingredient["measures"]["us"]["amount"], ingredient["unit"])
-        ingredients.append(ingredient_tuple)
-    title = results['title']
-    prep_time = results['readyInMinutes']
-    instructions = results['instructions']
-    summary = results['summary']
-    image = results['image']
-    source_url = results['sourceUrl']
-
+    title, prep_time, instructions, summary, image, source_url = results['title'], results['readyInMinutes'], results['instructions'], results['summary'], results['image'], results['sourceUrl']
     clean_summary = re.sub('<[^>]+>', '', summary)
     clean_instructions = re.sub('<[^>]+>', '', instructions)
 
-    return render_template('recipes/details.html', ingredients=ingredients, title=title, prep_time=prep_time, instructions=clean_instructions,
+    return render_template('recipes/details.html', title=title, prep_time=prep_time, instructions=clean_instructions,
                             summary=clean_summary, image=image, source_url=source_url)
 
 

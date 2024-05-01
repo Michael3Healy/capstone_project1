@@ -15,13 +15,6 @@
     height: 60vh;
 }
 
-/* .recipe-link-main {
-    position: absolute;
-    left: 23%;
-    right: 23%;
-    bottom: 20px;
-} */
-
 .recipe-link-user {
     position: absolute;
     left: 8%;
@@ -38,10 +31,6 @@
     position: absolute;
     left: 77%;
     bottom: 20px;
-}
-
-.bg-peach {
-    background-color: #FBE7C6;
 }
 
 #user_favorites {
@@ -66,11 +55,7 @@
 }
 
 .cart-item {
-    color: #fb1818!important;
-}
-
-.recipe-details-body {
-    background-color: #ade8f4;
+    color: #fb1818;
 }
 
 .inline {
@@ -123,3 +108,13 @@ footer {
 .column-list {
     columns: 2; /* Number of columns */
   }
+
+h1,
+h2,
+h3,
+p,
+label,
+option {
+    font-family: "Rubik", sans-serif;
+    color: black;
+}

@@ -45,8 +45,6 @@ class UserModelTestCase(TestCase):
         self.assertEqual(len(user.recipes), 2)
         self.assertEqual(len(user.allergies), 1)
         self.assertEqual(ingredient1.users[0], user)
-      
-
 
     def test_valid_registration(self):
         '''Test if User.register creates user with valid inputs'''

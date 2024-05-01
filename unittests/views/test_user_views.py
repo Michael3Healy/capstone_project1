@@ -117,6 +117,29 @@ class UserViewTestCase(TestCase):
             self.assertEqual(Allergy.query.count(), 3)
             self.assertEqual(Ingredient.query.count(), 2)
 
+    def test_get_user_details(self):
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.testuser.id
+
+            resp = c.get(f'/users/details')
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('testuser', html)
+
+    def test_edit_user_details(self):
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.testuser.id
+
+            resp = c.post(f'/users/edit', json={'username': 'testuser2', 'email': 'newemail@example.com', 'image_url': 'https://tinyurl.com/29q8o28r', 'diet': 'vegetarian', 'dietary_restrictions': 'peanuts, kiwi', 'password': 'password'}, follow_redirects=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(User.query.count(), 1)
+            self.assertEqual(Ingredient.query.count(), 2)
+            self.assertEqual(len(self.testuser.allergies), 2)
+
     
 
             
