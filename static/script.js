@@ -218,6 +218,7 @@ class RecipeSearch {
 			section.classList.add('pb-3')
 		}
 		this.addBtnEventListeners();
+		allPages.generateFruitMarkup();
 	}
 
 	validSearch(allRecipes) {
@@ -404,7 +405,6 @@ class PageStyle {
 		let fruitMarkup = '';
 
 		while (fruitSectionLeft.offsetHeight < Math.max(document.body.scrollHeight * 0.98, window.innerHeight * 0.9)) {
-			console.log(fruitSectionLeft.offsetHeight, document.documentElement.scrollHeight)
 			fruitMarkup += `<p><i class="fa-solid fa-lemon fa-2xl" style="color: #FFD43B;"></i></p> \
 			<p><i class="fa-solid fa-apple-whole fa-2xl" style="color: #e10505;"></i></p>`;
 			fruitSectionLeft.innerHTML = fruitMarkup;
