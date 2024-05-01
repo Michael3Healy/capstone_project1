@@ -2,6 +2,8 @@
 
 ## A recipe app that allows users to search for recipes based on ingredients and diet, and save recipes to their favorites and shopping cart.
 
+Link to live site: [Easy Recipes](https://easy-recipes-6vwo.onrender.com)
+
 **App Features Include:**
 
 - User authentication

@@ -14,7 +14,7 @@ app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 
-SECRET_KEY = os.environ.get('SECRET_KEY')
+app.secret_key = os.environ.get('SECRET_KEY')
 API_KEY = os.environ.get('API_KEY')
 
 # Email Configuration
