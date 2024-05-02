@@ -18,12 +18,12 @@ app.secret_key = os.environ.get('SECRET_KEY')
 API_KEY = os.environ.get('API_KEY')
 
 # Email Configuration
-MAIL_SERVER = os.environ.get('MAIL_SERVER')
-MAIL_PORT = int(os.environ.get('MAIL_PORT', 465))  # Convert to integer
-MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
-MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
-MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'False') == 'True'  # Convert to boolean
-MAIL_USE_SSL = os.environ.get('MAIL_USE_SSL', 'True') == 'True'  # Convert to boolean
+app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER')
+app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT'))
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USE_SSL'] = True
 
 mail = Mail(app)
 
