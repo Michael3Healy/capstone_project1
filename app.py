@@ -191,6 +191,7 @@ def register():
             db.session.add(user)
             db.session.commit()
         except IntegrityError:
+            db.session.rollback()
             flash("Username/email already taken", 'danger')
             return render_template('users/register.html', form=form)
         do_login(user)
@@ -251,15 +252,20 @@ def edit_user():
     form = UserEditForm(obj=g.user)
     if form.validate_on_submit():
         if User.authenticate(g.user.username, form.password.data):
-            # Update user details or keep the same if no input
-            g.user.username = form.username.data or g.user.username
-            g.user.email = form.email.data or g.user.email
-            g.user.image_url = form.image_url.data or url_for('static', filename='images/default-pic.png')
-            g.user.diet = form.diet.data
-            allergies = form.dietary_restrictions.data
-            set_allergies(allergies, g.user)
-            db.session.commit()
-            return redirect(url_for('get_user_details'))
+            try: 
+                # Update user details or keep the same if no input
+                g.user.username = form.username.data or g.user.username
+                g.user.email = form.email.data or g.user.email
+                g.user.image_url = form.image_url.data or url_for('static', filename='images/default-pic.png')
+                g.user.diet = form.diet.data
+                allergies = form.dietary_restrictions.data
+                set_allergies(allergies, g.user)
+                db.session.commit()
+                return redirect(url_for('get_user_details'))
+            except IntegrityError:
+                db.session.rollback()
+                flash("Username/email already taken", 'danger')
+                return render_template('users/edit.html', form=form)
         else:
             flash('Incorrect password', 'danger')
     return render_template('users/edit.html', form=form)

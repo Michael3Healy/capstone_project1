@@ -61,6 +61,7 @@ class User(db.Model):
             dietary_restrictions=''
         )
         set_allergies(allergies, user)
+        db.session.commit()
         
         return user
 
@@ -136,7 +137,6 @@ def set_allergies(allergies, user):
         elif existing_allergy not in user.allergies:
             user.allergies.append(existing_allergy)
             add_dietary_restrictions(index, user, allergy)
-        db.session.commit()
 
 def add_dietary_restrictions(index, user, allergy):
     '''Add dietary restrictions to user'''
@@ -144,4 +144,3 @@ def add_dietary_restrictions(index, user, allergy):
         user.dietary_restrictions = allergy
     else:
         user.dietary_restrictions = user.dietary_restrictions + ', ' + allergy
-    db.session.commit()
