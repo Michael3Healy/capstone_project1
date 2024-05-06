@@ -4,7 +4,9 @@ from functools import wraps
 from sqlalchemy.exc import IntegrityError
 from flask_mail import Mail, Message
 from forms import UserAddForm, UserEditForm, LoginForm
-from models import db, connect_db, User, Favorites, Allergy, Ingredient, Recipe, set_allergies
+from user_model import User
+from model_logic import connect_db, set_allergies, db
+from food_models import Recipe, Favorites, Allergy, Ingredient
 import re
 import requests
 
@@ -12,7 +14,7 @@ CURR_USER_KEY = "curr_user"
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///easy_recipes'
 
 app.secret_key = os.environ.get('SECRET_KEY')
 API_KEY = os.environ.get('API_KEY')
