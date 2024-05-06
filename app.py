@@ -78,8 +78,11 @@ def do_logout():
 def get_random_recipes():
     # Get 16 random recipes
 
-    resp = requests.get('https://api.spoonacular.com/recipes/random', params={'apiKey': API_KEY, 'number': 16})
-    return jsonify(resp.json())
+    try:
+        resp = requests.get('https://api.spoonacular.com/recipes/random', params={'apiKey': API_KEY, 'number': 16})
+        return jsonify(resp.json())
+    except requests.exceptions.RequestException as e:
+        return jsonify({"Error": "Could not get recipes"}), 500
 
 
 @app.route('/recipes/complexSearch')
@@ -89,17 +92,22 @@ def get_specific_recipes():
     include_ingredients = request.args['includeIngredients']
     exclude_ingredients = request.args['excludeIngredients']
     diet = request.args['diet']
-    resp = requests.get('https://api.spoonacular.com/recipes/complexSearch', params={'apiKey': API_KEY, 'includeIngredients': include_ingredients, 
+    try:
+        resp = requests.get('https://api.spoonacular.com/recipes/complexSearch', params={'apiKey': API_KEY, 'includeIngredients': include_ingredients, 
                                                                                 'excludeIngredients': exclude_ingredients, 'diet': diet, 'number': 8})
-    return jsonify(resp.json())
+        return jsonify(resp.json())
+    except requests.exceptions.RequestException as e:
+        return jsonify({"Error": "Could not get recipes"}), 500
 
 
 @app.route('/recipes/<int:recipe_id>/information')
 def get_recipe_info(recipe_id):
     # Get detailed information about a specific recipe
-
-    resp = requests.get(f'https://api.spoonacular.com/recipes/{recipe_id}/information', params={'apiKey': API_KEY})
-    return jsonify(resp.json())
+    try:
+        resp = requests.get(f'https://api.spoonacular.com/recipes/{recipe_id}/information', params={'apiKey': API_KEY})
+        return jsonify(resp.json())
+    except requests.exceptions.RequestException as e:
+        return jsonify({"Error": "Could not get recipe info"}), 500
 
 
 @app.route('/recipes/info', methods=['POST'])
@@ -107,8 +115,11 @@ def get_bulk_recipe_info():
     # Get detailed information about multiple recipes
 
     recipe_ids = ','.join(str(id) for id in request.json.get('ids', []))
-    resp = requests.get('https://api.spoonacular.com/recipes/informationBulk', params={'apiKey': API_KEY, 'ids': recipe_ids})
-    return jsonify(resp.json())
+    try:
+        resp = requests.get('https://api.spoonacular.com/recipes/informationBulk', params={'apiKey': API_KEY, 'ids': recipe_ids})
+        return jsonify(resp.json())
+    except requests.exceptions.RequestException as e:
+        return jsonify({"Error": "Could not get recipes info"}), 500
 
 
 @app.route('/users/current')
@@ -126,8 +137,11 @@ def get_saved_recipes(user_id):
 
     user = User.query.get_or_404(user_id)
     recipes = ','.join(str(recipe.id) for recipe in user.recipes)
-    resp = requests.get('https://api.spoonacular.com/recipes/informationBulk', params={'apiKey': API_KEY, 'ids': recipes})
-    return jsonify(resp.json())
+    try:  
+        resp = requests.get('https://api.spoonacular.com/recipes/informationBulk', params={'apiKey': API_KEY, 'ids': recipes})
+        return jsonify(resp.json())
+    except requests.exceptions.RequestException as e:
+        return jsonify({"Error": "Could not get recipes"}), 500
 
 
 @app.route('/users/<user_id>/recipes', methods=['DELETE'])
@@ -281,9 +295,13 @@ def show_shopping_cart():
     shopping_cart = Favorites.query.filter(Favorites.user_id==g.user.id, Favorites.in_shopping_cart==True).all()
     recipe_ids = [recipe.recipe_id for recipe in shopping_cart]
     recipe_ids = ','.join(str(id) for id in recipe_ids)
-    resp = requests.get('https://api.spoonacular.com/recipes/informationBulk', params={'apiKey': API_KEY, 'ids': recipe_ids})
-    recipes = resp.json()
-    return render_template('users/shopping_cart.html', recipes=recipes)
+    try:
+        resp = requests.get('https://api.spoonacular.com/recipes/informationBulk', params={'apiKey': API_KEY, 'ids': recipe_ids})
+        recipes = resp.json()
+        return render_template('users/shopping_cart.html', recipes=recipes)
+    except requests.exceptions.RequestException as e:
+        flash('Could not get recipes', 'danger')
+        return render_template('users/shopping_cart.html', recipes=[])
 
 @app.route('/send_email', methods=['POST'])
 def send_email():
@@ -293,16 +311,20 @@ def send_email():
     shopping_cart = Favorites.query.filter(Favorites.user_id==g.user.id, Favorites.in_shopping_cart==True).all()
     recipe_ids = [recipe.recipe_id for recipe in shopping_cart]
     string_recipe_ids = ','.join(str(id) for id in recipe_ids)
-    resp = requests.get('https://api.spoonacular.com/recipes/informationBulk', params={'apiKey': API_KEY, 'ids': string_recipe_ids})
-    recipes = resp.json()
+    try:
+        resp = requests.get('https://api.spoonacular.com/recipes/informationBulk', params={'apiKey': API_KEY, 'ids': string_recipe_ids})
+        recipes = resp.json()
 
-    # Render email template and send email
-    rendered_template = render_template('users/email_template.html', recipes=recipes)
-    msg = Message('Your Shopping Cart', sender="easyrecipes.shopping@gmail.com", recipients=[g.user.email])
-    msg.html = rendered_template
-    mail.send(msg)
-    flash('Email sent!', 'success')
-    return redirect(url_for('show_shopping_cart'))
+        # Render email template and send email
+        rendered_template = render_template('users/email_template.html', recipes=recipes)
+        msg = Message('Your Shopping Cart', sender="easyrecipes.shopping@gmail.com", recipients=[g.user.email])
+        msg.html = rendered_template
+        mail.send(msg)
+        flash('Email sent!', 'success')
+        return redirect(url_for('show_shopping_cart'))
+    except requests.exceptions.RequestException as e:
+        flash('Could not get recipes', 'danger')
+        return redirect(url_for('show_shopping_cart'))
 
 
 # Recipe Routes
@@ -311,14 +333,18 @@ def send_email():
 def show_recipe_details(recipe_id):
     # Shows details about recipe (instructions, summary, video, etc.)
     
-    resp = requests.get(f'https://api.spoonacular.com/recipes/{recipe_id}/information', params={'apiKey': API_KEY})
-    results = resp.json()
-    title, prep_time, instructions, summary, image, source_url = results['title'], results['readyInMinutes'], results['instructions'], results['summary'], results['image'], results['sourceUrl']
-    clean_summary = re.sub('<[^>]+>', '', summary)
-    clean_instructions = re.sub('<[^>]+>', '', instructions)
+    try:
+        resp = requests.get(f'https://api.spoonacular.com/recipes/{recipe_id}/information', params={'apiKey': API_KEY})
+        results = resp.json()
+        title, prep_time, instructions, summary, image, source_url = results['title'], results['readyInMinutes'], results['instructions'], results['summary'], results['image'], results['sourceUrl']
+        clean_summary = re.sub('<[^>]+>', '', summary)
+        clean_instructions = re.sub('<[^>]+>', '', instructions)
 
-    return render_template('recipes/details.html', title=title, prep_time=prep_time, instructions=clean_instructions,
-                            summary=clean_summary, image=image, source_url=source_url)
+        return render_template('recipes/details.html', title=title, prep_time=prep_time, instructions=clean_instructions,
+                                summary=clean_summary, image=image, source_url=source_url)
+    except requests.exceptions.RequestException as e:
+        flash('Could not get recipe details', 'danger')
+        return redirect('/')
 
 
     
