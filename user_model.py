@@ -1,4 +1,5 @@
-from model_logic import db, set_allergies
+from db_init import db
+from model_logic import set_allergies
 from food_models import Ingredient, Recipe, Favorites, Allergy
 from flask_bcrypt import Bcrypt
 

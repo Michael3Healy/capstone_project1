@@ -1,4 +1,4 @@
-from model_logic import db
+from db_init import db
 
 class Favorites(db.Model):
     '''Tracks users' saved recipes.'''

@@ -1,6 +1,9 @@
 import os
 from unittest import TestCase
-from models import Allergy, Favorites, Ingredient, Recipe, User, db, connect_db
+from db_init import db
+from food_models import Ingredient, Recipe, Favorites, Allergy
+from model_logic import set_allergies
+from user_model import User
 from pdb import set_trace
 from sqlalchemy import exc
 
@@ -10,6 +13,8 @@ from app import app, CURR_USER_KEY
 
 app.config['WTF_CSRF_ENABLED'] = False
 app.config['Testing'] = True
+
+print(db)
 
 db.drop_all()
 db.create_all()
@@ -32,12 +37,13 @@ class UserViewTestCase(TestCase):
                         image_url='https://tinyurl.com/29q8o28r', diet='vegan', allergies='peanuts')
 
         db.session.add(self.testuser)
+        print(db)
         db.session.commit()
 
     def tearDown(self):
         db.session.rollback()
 
-    def test_user_profile(self):
+    def test_show_user_profile(self):
         with self.client as c:
             with c.session_transaction() as sess:
                 sess[CURR_USER_KEY] = self.testuser.id
@@ -116,6 +122,22 @@ class UserViewTestCase(TestCase):
             self.assertIn('testuser2', html)
             self.assertEqual(Allergy.query.count(), 3)
             self.assertEqual(Ingredient.query.count(), 2)
+
+    def test_valid_login(self):
+        with self.client as c:
+            resp = c.post('/login', json={'username': 'testuser', 'password': 'password'}, follow_redirects=True)
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('testuser', html)
+
+    def test_invalid_login(self):
+        with self.client as c:
+            resp = c.post('/login', json={'username': 'testuser', 'password': 'wrongpassword'}, follow_redirects=True)
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('Invalid credentials', html)
 
     def test_get_user_details(self):
         with self.client as c:

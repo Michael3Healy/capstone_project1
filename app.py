@@ -5,7 +5,8 @@ from sqlalchemy.exc import IntegrityError
 from flask_mail import Mail, Message
 from forms import UserAddForm, UserEditForm, LoginForm
 from user_model import User
-from model_logic import connect_db, set_allergies, db
+from model_logic import set_allergies
+from db_init import connect_db, db
 from food_models import Recipe, Favorites, Allergy, Ingredient
 import re
 import requests
@@ -14,7 +15,7 @@ CURR_USER_KEY = "curr_user"
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///easy_recipes'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgresql:///easy_recipes')
 
 app.secret_key = os.environ.get('SECRET_KEY')
 API_KEY = os.environ.get('API_KEY')
@@ -163,8 +164,10 @@ def save_recipe(user_id):
 
     user = User.query.get_or_404(user_id)
     recipe_id = request.json['recipe_id']
-    saved_recipe = Recipe(id=recipe_id)
-    user.recipes.append(saved_recipe)
+    recipe = Recipe.query.get(recipe_id)
+    if not recipe:
+        recipe = Recipe(id=recipe_id)
+    user.recipes.append(recipe)
     db.session.commit()
     return jsonify({"Result": "Saved"})
 
@@ -248,6 +251,8 @@ def logout():
 @app.route('/')
 def home_page():
     '''Renders home page, the place to search for recipes'''
+    if not g.user:
+        return redirect('/login')
     return render_template('home.html')
 
 

@@ -1,12 +1,7 @@
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
+from food_models import Ingredient
 import re
-
-db = SQLAlchemy()
-
-def connect_db(app):
-    '''Connect db to Flask app'''
-    db.init_app(app)
 
 def set_allergies(allergies, user):
     '''Add allergies to user. If allergy does not exist, create new ingredient and add to user. If allergy exists, add to user'''
