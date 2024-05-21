@@ -10,6 +10,7 @@ from db_init import connect_db, db
 from food_models import Recipe, Favorites, Allergy, Ingredient
 import re
 import requests
+import pdb
 
 CURR_USER_KEY = "curr_user"
 
@@ -53,7 +54,12 @@ def add_user_to_g():
     '''If logged in, add curr user to Flask global for easier access in templates and view functions.'''
 
     if CURR_USER_KEY in session:
-        g.user = User.query.get(session[CURR_USER_KEY])
+        try:
+            g.user = User.query.get(session[CURR_USER_KEY])
+        except:
+            db.session.rollback()
+            del session[CURR_USER_KEY]
+            g.user = None
     else:
         g.user = None
 
@@ -220,7 +226,7 @@ def register():
         
 
 @app.route('/login', methods=["GET", "POST"])
-def login():
+def handle_login():
     '''Handle user login.'''
 
     form = LoginForm()
@@ -230,9 +236,8 @@ def login():
             do_login(user)
             flash(f"Hello, {user.username}!", "success")
             return redirect("/")
-        else:
-            flash("Invalid credentials", 'danger')
-    else:
+        flash("Invalid credentials", 'danger')
+    elif request.method == 'POST':
         flash(form.errors, 'danger')
     return render_template('users/login.html', form=form)
 
