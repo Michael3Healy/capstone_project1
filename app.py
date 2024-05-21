@@ -232,6 +232,8 @@ def login():
             return redirect("/")
         else:
             flash("Invalid credentials", 'danger')
+    else:
+        flash(`form.errors`, 'danger')
     return render_template('users/login.html', form=form)
 
 
