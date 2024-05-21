@@ -97,7 +97,7 @@ class RecipeSearch {
 			if (ingredients[1]) {
 				ingredients[1] = ingredients[1].join(',');
 			}
-			const allRecipes = await axios.get(`https://easy-recipes-6vwo.onrender.com/recipes/complexSearch?includeIngredients=${ingredients[0]}&excludeIngredients=${ingredients[1]}&diet=${diet}`);
+			const allRecipes = await axios.get(`http://127.0.0.1:5000/recipes/complexSearch?includeIngredients=${ingredients[0]}&excludeIngredients=${ingredients[1]}&diet=${diet}`);
 			if (!this.validSearch(allRecipes)) return;
 			this.recipes = allRecipes.data.results;
 
@@ -125,7 +125,7 @@ class RecipeSearch {
 		// Retrieve list of random recipes
 
 		try {
-			const response = await axios.get('https://easy-recipes-6vwo.onrender.com/recipes/random');
+			const response = await axios.get('http://127.0.0.1:5000/recipes/random');
 			const randomRecipes = response.data.recipes;
 			return randomRecipes;
 		} catch (error) {
@@ -149,7 +149,7 @@ class RecipeSearch {
 		// Get additional info for each recipe
 
 		const recipeIds = this.recipes.map(recipe => recipe.id);
-		const response = await axios.post('https://easy-recipes-6vwo.onrender.com/recipes/info', { ids: recipeIds });
+		const response = await axios.post('http://127.0.0.1:5000/recipes/info', { ids: recipeIds });
 		const recipesInfo = response.data;
 		this.recipes = recipesInfo;
 	}
@@ -267,7 +267,7 @@ class Recipe {
 	}
 
 	async getInfo() {
-		const response = await axios.get(`https://easy-recipes-6vwo.onrender.com/recipes/${this.id}/information`);
+		const response = await axios.get(`http://127.0.0.1:5000/recipes/${this.id}/information`);
 		const recipeInfo = response.data;
 		this.title = recipeInfo.title;
 		this.cuisine = recipeInfo.cuisines;
@@ -292,7 +292,7 @@ class User {
 	async getRecipes() {
 		// Retrieves user's favorite recipes from backend
 
-		const response = await axios.get(`https://easy-recipes-6vwo.onrender.com/users/${this.id}/recipes`);
+		const response = await axios.get(`http://127.0.0.1:5000/users/${this.id}/recipes`);
 		this.favoriteRecipeIds = response.data.map(recipe => recipe.id);
 		this.recipes = response.data;
 	}
@@ -300,14 +300,14 @@ class User {
 	async getShoppingCart() {
 		// Retrieves user's shopping cart from backend
 
-		const response = await axios.get(`https://easy-recipes-6vwo.onrender.com/users/${this.id}/cart`);
+		const response = await axios.get(`http://127.0.0.1:5000/users/${this.id}/cart`);
 		this.shoppingCart = response.data;
 	}
 
 	static async getCurrentUser() {
 		// Get current user from backend
 
-		const user = await axios.get(`https://easy-recipes-6vwo.onrender.com/users/current`);
+		const user = await axios.get(`http://127.0.0.1:5000/users/current`);
 		if (user != {}) {
 			return user.data;
 		}
@@ -349,7 +349,7 @@ class User {
 	async removeFavorite(recipeId) {
 		// Remove recipe from user's favorites
 
-		await axios.delete(`https://easy-recipes-6vwo.onrender.com/users/${this.id}/recipes`, { data: { recipe_id: recipeId } });
+		await axios.delete(`http://127.0.0.1:5000/users/${this.id}/recipes`, { data: { recipe_id: recipeId } });
 		const indexToRemove = this.favoriteRecipeIds.indexOf(parseInt(recipeId));
 		this.favoriteRecipeIds.splice(indexToRemove, 1);
 	}
@@ -358,7 +358,7 @@ class User {
 		// Add recipe to user's favorites
 
 		const recipe = new Recipe(recipeId);
-		await axios.post(`https://easy-recipes-6vwo.onrender.com/users/${this.id}/recipes`, { recipe_id: recipe.id });
+		await axios.post(`http://127.0.0.1:5000/users/${this.id}/recipes`, { recipe_id: recipe.id });
 		this.favoriteRecipeIds.push(parseInt(recipeId));
 	}
 
@@ -373,7 +373,7 @@ class User {
 		}
 		const cartIcon = cartBtn.querySelector('i');
 		const recipeId = cartBtn.dataset.recipeId;
-		await axios.patch(`https://easy-recipes-6vwo.onrender.com/users/${this.id}/cart`, { recipe_id: recipeId });
+		await axios.patch(`http://127.0.0.1:5000/users/${this.id}/cart`, { recipe_id: recipeId });
 		if (this.shoppingCart.includes(parseInt(recipeId))) {
 			this.removeFromCart(recipeId);
 			cartIcon.classList.remove('cart-item');
