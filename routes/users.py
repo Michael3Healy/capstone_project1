@@ -25,7 +25,6 @@ def get_saved_recipes(user_id):
     # Get all saved recipes for a user as well as detailed information about each recipe
 
     user = User.query.get_or_404(user_id)
-    print('------saved recipes bp-----------')
     recipes = ','.join(str(recipe.id) for recipe in user.recipes)
     try:  
         resp = requests.get('https://api.spoonacular.com/recipes/informationBulk', params={'apiKey': API_KEY, 'ids': recipes})
@@ -70,6 +69,15 @@ def toggle_cart_status(user_id):
         cart_item.in_shopping_cart = False
     db.session.commit()
     return jsonify({"Result": "Added/Removed from cart"}), 200
+
+@users_bp.route('/<user_id>/cart', methods=['GET'])
+def get_shopping_cart(user_id):
+    # Get all recipes in user's shopping cart
+
+    user = User.query.get_or_404(user_id)
+    shopping_cart = Favorites.query.filter(Favorites.user_id==user.id, Favorites.in_shopping_cart==True).all()
+    recipe_ids = [recipe.recipe_id for recipe in shopping_cart]
+    return jsonify(recipe_ids)
 
 @users_bp.route('/details')
 @login_required

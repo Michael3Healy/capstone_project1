@@ -1,7 +1,9 @@
 import os
 from unittest import TestCase
 from pdb import set_trace
-from models import db, User, Favorites, Allergy, Ingredient, Recipe
+from food_models import Recipe, Favorites, Allergy, Ingredient
+from db_init import db
+from user_model import User
 from sqlalchemy import exc
 
 os.environ['DATABASE_URL'] = "postgresql:///easy_recipes_test"

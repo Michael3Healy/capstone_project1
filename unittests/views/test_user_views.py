@@ -14,8 +14,6 @@ from app import app, CURR_USER_KEY
 app.config['WTF_CSRF_ENABLED'] = False
 app.config['Testing'] = True
 
-print(db)
-
 db.drop_all()
 db.create_all()
 
@@ -37,7 +35,6 @@ class UserViewTestCase(TestCase):
                         image_url='https://tinyurl.com/29q8o28r', diet='vegan', allergies='peanuts')
 
         db.session.add(self.testuser)
-        print(db)
         db.session.commit()
 
     def tearDown(self):
