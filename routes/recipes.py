@@ -1,5 +1,5 @@
 from flask import g, flash, redirect
-from flask import Blueprint, Flask, render_template, jsonify, request, flash, redirect, session, g, url_for
+from flask import Blueprint, Flask, render_template, jsonify, request, flash, redirect, session, g
 from food_models import Recipe, Favorites
 from forms import UserEditForm, UserAddForm, LoginForm
 from db_init import db

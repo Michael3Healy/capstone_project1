@@ -69,7 +69,7 @@ def send_email():
         msg.html = rendered_template
         mail.send(msg)
         flash('Email sent!', 'success')
-        return redirect(url_for('show_shopping_cart'))
+        return redirect(url_for('users.show_shopping_cart'))
     except requests.exceptions.RequestException as e:
         flash('Could not get recipes', 'danger')
-        return redirect(url_for('show_shopping_cart'))
+        return redirect(url_for('users.show_shopping_cart'))
