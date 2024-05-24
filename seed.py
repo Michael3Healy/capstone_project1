@@ -1,5 +1,7 @@
 from app import app
-from models import db, User, Allergy
+from food_models import Recipe, Favorites, Allergy, Ingredient
+from db_init import db
+from user_model import User
 
 db.drop_all()
 db.create_all()

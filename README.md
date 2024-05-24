@@ -35,4 +35,31 @@ Link to live site: [Easy Recipes](https://easy-recipes-6vwo.onrender.com)
  - Bootstrap
  - Render
 
+**Setup Guide:**
+   1. `git clone https://{your-personal-access-token}@github.com/Michael3Healy/capstone_project1.git`
+   2. `cd capstone_project1`
+   3. `python3 -m venv venv`
+   4. `source venv/bin/activate`
+   5. `pip install -r requirements.txt`
+   6. Retrieve api key from [Spoonacular API](https://spoonacular.com/food-api)
+   7. Retrieve app password from your gmail account
+        - Go to your google account
+        - Click on security
+        - Turn on 2-step verification
+        - Go to app passwords
+        - Retrieve new password
+   8. Create .env file with the following:
+      - SECRET_KEY = any random string
+      - SPOONACULAR_API_KEY = your spoonacular api key
+      - MAIL_USERNAME = your email
+      - MAIL_PASSWORD = your app password from previous step
+      - MAIL_USE_TLS = True
+      - MAIL_USE_SSL = False
+      - MAIL_PORT = 465
+      - MAIL_SERVER = 'smtp.gmail.com'
+   9.  In postgres, create database called `easy_recipes`
+   10. Run seed.py file
+   11. Change all instances of 'https://easy-recipes-6vwo.onrender.com' to 'http://localhost:5000' in script.js
+   12. `flask run`
+
 
